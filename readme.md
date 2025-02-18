@@ -38,4 +38,4 @@ git clone https://github.com/contentstack-expert-services/CommerceTool-POC.git
 ```
 
 **This will start the script and the categories, products with valid key will get replaced.
-This script will stop the publishing of the entries with empty category and product object** 
+This script will stop the publishing of the entries with empty category and product object. All the process will be registered in the app.log file** 
