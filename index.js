@@ -3,6 +3,7 @@ import path from 'path';
 import fetch from 'node-fetch';
 import chalk from 'chalk';
 import { desConfig } from './dest.config.js';
+import fixFieldValidityRule from './FVR.cjs';
 
 // Simple logger using console and file
 const logFilePath = 'app.log';
@@ -79,7 +80,7 @@ function retrieveAllEntries(directoryPath, authTokens, apiUrl) {
             }));
             
             // Filter out null results and update the data array
-            entry.product.data = entry.product.data.filter((_, index) => results[index] !== null);
+            entry.product.data = entry?.product?.data.filter((_, index) => results[index] !== null);
             
             // If no valid products remain, delete the product object
             if (entry.product.data.length === 0) {
@@ -94,14 +95,14 @@ function retrieveAllEntries(directoryPath, authTokens, apiUrl) {
     async function processEntryFile(filePath, authTokens, apiUrl) {
         try {
             const rawData = fs.readFileSync(filePath, 'utf8');
-            const jsonData = JSON.parse(rawData);
+            const jsonData = JSON?.parse(rawData);
             let entryMap = {};
 
             for await (const entryID of Object.keys(jsonData)) {
                 entryMap = await processEntry(jsonData[entryID], entryID, authTokens, apiUrl, filePath, entryMap);
                 
                 // Check if both category and product are empty and empty publish_details if so
-                if (Object.keys(jsonData[entryID].category || {}).length === 0 && Object.keys(jsonData[entryID].product || {}).length === 0) {
+                if (Object?.keys(jsonData[entryID]?.category || {})?.length === 0 && Object?.keys(jsonData[entryID]?.product || {})?.length === 0) {
                     jsonData[entryID].publish_details = [];
                 }
             }
@@ -111,7 +112,7 @@ function retrieveAllEntries(directoryPath, authTokens, apiUrl) {
             
             return entryMap;
         } catch (error) {
-            logger.error(`Error processing ${path.basename(filePath)}: ${error.message}`);
+            logger.error(`Error processing ${path?.basename(filePath)}: ${error.message}`);
             return {};
         }
     }
@@ -119,7 +120,7 @@ function retrieveAllEntries(directoryPath, authTokens, apiUrl) {
     processDirectory(entriesPath);
 
     // Log all updated entries at the end
-    if (Object.keys(allEntries).length > 0) {
+    if (Object?.keys(allEntries)?.length > 0) {
         logger.info(`All updated entries: ${JSON.stringify(allEntries)}`);
     }
 
@@ -129,12 +130,12 @@ function retrieveAllEntries(directoryPath, authTokens, apiUrl) {
 // Simplified processCategoryData function to handle a single category
 async function processCategoryData(category, authToken, apiUrl, projectKey, entryID, filePath, entryMap) {
     logger.info(`Processing category for Entry ID: ${entryID}`);
-    if (!category || !category.key) {
+    if (!category || !category?.key) {
         logger.error(`Error: ${path.basename(filePath)} - Entry ID: ${entryID} - Invalid or missing category data`);
         return entryMap;
     }
 
-    const categoryKey = category.key;
+    const categoryKey = category?.key;
 
     try {
         const newCategoryId = await getCategoryId(authToken, apiUrl, categoryKey, projectKey);
@@ -155,12 +156,12 @@ async function processCategoryData(category, authToken, apiUrl, projectKey, entr
 // Helper function to process product data
 async function processProductData(product, authToken, apiUrl, projectKey, entryID, filePath, entryMap) {
     logger.info(`Processing product for Entry ID: ${entryID}`);
-    if (!product || !product.key) {
-        logger.error(`Error: ${path.basename(filePath)} - Entry ID: ${entryID} - Invalid or missing product data`);
+    if (!product || !product?.key) {
+        logger.error(`Error: ${path?.basename(filePath)} - Entry ID: ${entryID} - Invalid or missing product data`);
         return null;
     }
 
-    const productKey = product.key;
+    const productKey = product?.key;
     try {
         const newProductId = await getProductId(authToken, apiUrl, productKey, projectKey);
         if (newProductId) {
@@ -187,17 +188,17 @@ async function getCategoryId(authToken, apiUrl, key, projectKey) {
         }
     });
 
-    if (response.status === 404) {
+    if (response?.status === 404) {
         logger.error(`Category not found for key "${key}". HTTP Status: 404`);
         return null;
     }
 
-    if (!response.ok) {
+    if (!response?.ok) {
         logger.error(`Failed to fetch category for key "${key}". HTTP Status: ${response.status}`);
         return null;
     }
 
-    const data = await response.json();
+    const data = await response?.json();
     return data?.id || null;
 }
 
@@ -211,26 +212,30 @@ async function getProductId(authToken, apiUrl, key, projectKey) {
         }
     });
 
-    if (response.status === 404) {
+    if (response?.status === 404) {
         logger.error(`Product not found for key "${key}". HTTP Status: 404`);
         return null;
     }
 
-    if (!response.ok) {
-        logger.error(`Failed to fetch product for key "${key}". HTTP Status: ${response.status}`);
+    if (!response?.ok) {
+        logger.error(`Failed to fetch product for key "${key}". HTTP Status: ${response?.status}`);
         return null;
     }
 
-    const data = await response.json();
+    const data = await response?.json();
     return data?.id || null;
 }
 
 // Example usage
-const userPath = desConfig.ExportedDataPath; // Updated to use desConfig.ExportedDataPath
+const userPath = desConfig?.ExportedDataPath; // Updated to use desConfig.ExportedDataPath
 
 (async () => {
     try {
         console.log('Starting the process...');
+        
+        // Remove the invalid FVR
+        const result = await fixFieldValidityRule(desConfig?.ExportedDataPath);
+        console.log(result);
         
         // Get auth token for categories
         const categoryAuthToken = await getAuthToken(desConfig.clientId, desConfig.clientSecret, desConfig.authUrl, 'view_categories:cms-95');
