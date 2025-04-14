@@ -3,13 +3,15 @@
 
 This script replaces the Category and Product IDs of the two configs of the commerce tool app. This can be used when migrating the data from one stack to another.
 
+## Prerequisites
+* **Export the data using contentstack [CLI export command](https://www.contentstack.com/docs/developers/cli/export-content-using-the-cli)**
 
 ## How to run 
 
 * **Clone the project**
 
 ```bash
-git clone https://github.com/contentstack-expert-services/CommerceTool-POC.git
+git clone https://github.com/contentstack-expert-services/Commercetool-POC.git
 ```
 * **Install the dependencies**
 
